@@ -5,562 +5,586 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>경조사비 계산기</title>
   <meta name="description" content="결혼식·장례식 경조사비를 스마트하게 계산해 드립니다">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#3182F6">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="경조사비">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" id="pwa-manifest">
   <link rel="apple-touch-icon" id="app-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    /* ── RESET & TOKENS ─────────────────────────────── */
+    /* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #F2F2F7;
+      --blue: #3182F6;
+      --blue-light: #EBF3FF;
+      --blue-mid: #C8DFFE;
+      --bg: #F8F9FA;
       --card: #FFFFFF;
-      --t1: #1C1C1E;
-      --t2: #6C6C70;
+      --t1: #111111;
+      --t2: #6B7280;
       --t3: #C7C7CC;
-      --border: #E5E5EA;
-      --accent: #007AFF;
-      --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.07);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
-      --r: 20px;
-      --r-sm: 13px;
+      --border: #E5E8EB;
+      --check-empty: #D1D5DB;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.05);
+      --r: 18px;
+      --r-sm: 12px;
     }
+
     body {
       font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
       background: var(--bg);
       color: var(--t1);
       min-height: 100vh;
-      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       -webkit-text-size-adjust: 100%;
     }
 
-    /* ── APP SHELL ───────────────────────────────────── */
     #app {
       max-width: 480px;
       margin: 0 auto;
       min-height: 100vh;
-      padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
+      background: var(--bg);
+      position: relative;
     }
 
-    /* ── TOP BAR ─────────────────────────────────────── */
-    .top-bar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(242,242,247,0.9);
-      backdrop-filter: saturate(180%) blur(20px);
-      -webkit-backdrop-filter: saturate(180%) blur(20px);
-      padding: max(48px, calc(14px + env(safe-area-inset-top))) 20px 0;
+    /* ── TOP NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      padding: max(48px, calc(12px + env(safe-area-inset-top))) 20px 0;
     }
-    .top-bar-inner {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 12px;
+    .nav-inner {
+      display: flex; align-items: center;
+      height: 48px; gap: 4px;
     }
-    .back-btn {
-      width: 34px; height: 34px;
-      border: none;
-      background: var(--card);
-      border-radius: 50%;
+    .nav-back {
+      width: 40px; height: 40px;
+      border: none; background: none;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      box-shadow: var(--shadow);
+      cursor: pointer; border-radius: 50%;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.2s ease;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
     }
-    .back-btn.visible { opacity: 1; pointer-events: all; }
-    .back-btn:active { transform: scale(0.9); }
-    .back-btn svg { width: 17px; height: 17px; stroke: var(--t1); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-    .top-title {
-      font-size: 16px; font-weight: 700;
-      letter-spacing: -0.3px; color: var(--t1);
-      flex: 1;
-    }
-    .step-indicator { font-size: 13px; color: var(--t2); font-weight: 500; }
-    .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-    .progress-bar {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      transition: width 0.4s cubic-bezier(0.4,0,0.2,1), background 0.4s ease;
+    .nav-back.show { opacity: 1; pointer-events: all; }
+    .nav-back:active { background: var(--border); }
+    .nav-back svg { width: 20px; height: 20px; stroke: var(--t1); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-title { font-size: 16px; font-weight: 700; color: var(--t1); flex: 1; }
+    .nav-step { font-size: 14px; font-weight: 600; color: var(--blue); }
+
+    /* progress */
+    .prog-wrap { height: 4px; background: var(--border); margin-top: 2px; }
+    .prog-bar {
+      height: 100%; background: var(--blue); border-radius: 0 2px 2px 0;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
     }
 
-    /* ── SCREENS ─────────────────────────────────────── */
-    .screen { display: none; padding: 26px 20px; }
-    .screen.active { display: block; animation: slideIn 0.28s cubic-bezier(0.4,0,0.2,1); }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(18px); }
-      to   { opacity: 1; transform: translateX(0); }
+    /* ── SCREENS ── */
+    .screen { display: none; padding: 32px 20px 120px; }
+    .screen.active { display: block; animation: fadeUp 0.25s ease; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── TYPOGRAPHY ──────────────────────────────────── */
+    /* ── TYPOGRAPHY ── */
     .headline {
-      font-size: 25px; font-weight: 900;
-      letter-spacing: -0.8px; line-height: 1.3;
-      margin-bottom: 6px;
+      font-size: 24px; font-weight: 900;
+      line-height: 1.4; letter-spacing: -0.5px;
+      color: var(--t1); margin-bottom: 8px;
     }
+    .headline .hl { color: var(--blue); }
     .sub {
       font-size: 14px; color: var(--t2);
-      line-height: 1.65; margin-bottom: 28px;
+      line-height: 1.6; margin-bottom: 32px;
     }
 
-    /* ── EVENT TYPE CARDS ────────────────────────────── */
-    .event-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .event-card {
+    /* ── CARD GRID (체크 선택 카드) ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card-grid.col1 { grid-template-columns: 1fr; }
+    .card-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .sel-card {
       background: var(--card);
-      border: 2.5px solid transparent;
+      border: 2px solid var(--border);
       border-radius: var(--r);
-      padding: 30px 14px 24px;
-      text-align: center;
-      cursor: pointer;
+      padding: 20px 14px 18px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; position: relative;
+      transition: all 0.18s ease;
       box-shadow: var(--shadow);
-      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
-      user-select: none;
-      -webkit-user-select: none;
+      min-height: 120px;
+      user-select: none; -webkit-user-select: none;
     }
-    .event-card:active { transform: scale(0.96); }
-    .event-card.sel-wedding { border-color: #FF9500; background: #FFFBF2; }
-    .event-card.sel-funeral { border-color: #3C3C3E; background: #F5F5F5; }
-    .ev-emoji { font-size: 50px; display: block; margin-bottom: 14px; }
-    .ev-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-    .ev-desc { font-size: 12px; color: var(--t2); margin-top: 5px; line-height: 1.5; }
+    .sel-card:active { transform: scale(0.97); }
+    .sel-card.selected {
+      border-color: var(--blue);
+      background: var(--blue-light);
+    }
 
-    /* ── SLIDER CARDS ────────────────────────────────── */
-    .slider-card {
+    /* 체크 아이콘 (우상단) */
+    .check-mark {
+      position: absolute; top: 12px; right: 12px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--check-empty);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s ease;
+      flex-shrink: 0;
+    }
+    .check-mark svg {
+      width: 13px; height: 13px;
+      stroke: white; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .sel-card.selected .check-mark { background: var(--blue); }
+    .sel-card.selected .check-mark svg { opacity: 1; }
+
+    .card-emoji { font-size: 42px; margin-bottom: 10px; display: block; }
+    .card-label { font-size: 15px; font-weight: 700; color: var(--t1); text-align: center; }
+    .card-desc { font-size: 12px; color: var(--t2); margin-top: 4px; text-align: center; line-height: 1.4; }
+    .sel-card.selected .card-label { color: var(--blue); }
+
+    /* 작은 카드 (venue, attendance) */
+    .sel-card.sm {
+      min-height: 90px;
+      padding: 16px 10px 14px;
+    }
+    .sel-card.sm .card-emoji { font-size: 28px; margin-bottom: 7px; }
+    .sel-card.sm .card-label { font-size: 13px; }
+    .sel-card.sm .check-mark { width: 20px; height: 20px; top: 9px; right: 9px; }
+    .sel-card.sm .check-mark svg { width: 11px; height: 11px; }
+
+    /* ── SLIDER SECTION ── */
+    .slider-wrap {
       background: var(--card);
       border-radius: var(--r);
       padding: 22px 20px 18px;
       margin-bottom: 14px;
       box-shadow: var(--shadow);
     }
-    .sl-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .sl-left { display: flex; align-items: center; gap: 10px; }
-    .sl-emoji { font-size: 26px; }
-    .sl-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
-    .sl-hint { font-size: 11px; color: var(--t2); margin-top: 2px; }
-    .sl-badge {
-      background: var(--accent);
-      color: white;
-      font-size: 13px; font-weight: 800;
-      padding: 5px 12px;
-      border-radius: 30px;
-      min-width: 36px; text-align: center;
-      transition: background 0.3s;
+    .sl-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 18px;
     }
-    .sl-level { font-size: 12px; color: var(--accent); font-weight: 600; text-align: right; margin-bottom: 12px; min-height: 18px; transition: color 0.3s; }
+    .sl-info { display: flex; align-items: center; gap: 10px; }
+    .sl-emoji { font-size: 28px; }
+    .sl-texts {}
+    .sl-name { font-size: 16px; font-weight: 700; }
+    .sl-hint { font-size: 12px; color: var(--t2); margin-top: 3px; }
+    .sl-val {
+      background: var(--blue); color: white;
+      font-size: 14px; font-weight: 800;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .sl-lv {
+      font-size: 12px; color: var(--blue); font-weight: 600;
+      text-align: right; margin-bottom: 12px;
+    }
     input[type="range"] {
       -webkit-appearance: none; appearance: none;
-      width: 100%; height: 6px;
-      border-radius: 3px; outline: none;
-      cursor: pointer; transition: background 0.15s;
+      width: 100%; height: 6px; border-radius: 3px;
+      outline: none; cursor: pointer;
     }
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 28px; height: 28px;
-      border-radius: 50%; background: white;
-      border: 3px solid var(--accent);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-      cursor: pointer; transition: transform 0.1s, border-color 0.3s;
+      -webkit-appearance: none;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: white; border: 3px solid var(--blue);
+      box-shadow: 0 2px 8px rgba(49,130,246,0.3);
+      cursor: pointer; transition: transform 0.1s;
     }
-    input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.18); }
+    input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
     input[type="range"]::-moz-range-thumb {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: white; border: 3px solid var(--accent);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15); cursor: pointer;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: white; border: 3px solid var(--blue);
+      box-shadow: 0 2px 8px rgba(49,130,246,0.3); cursor: pointer;
     }
-    .sl-ticks { display: flex; justify-content: space-between; margin-top: 9px; padding: 0 2px; }
-    .sl-tick { font-size: 10px; color: var(--t3); }
+    .sl-labels {
+      display: flex; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .sl-lbl { font-size: 10px; color: var(--t3); }
 
-    /* ── CHIPS ───────────────────────────────────────── */
-    .section-label {
-      font-size: 12px; font-weight: 700; color: var(--t2);
-      text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 11px; margin-top: 26px;
+    /* ── SECTION TITLE ── */
+    .sec-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--t2); letter-spacing: 0.4px;
+      margin-bottom: 12px; margin-top: 28px;
     }
-    .section-label:first-of-type { margin-top: 0; }
-    .chips { display: flex; flex-wrap: wrap; gap: 9px; }
-    .chip {
+    .sec-title:first-of-type { margin-top: 0; }
+
+    /* ── TIPS ── */
+    .tips-wrap {
       background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 40px;
-      padding: 11px 18px;
-      font-size: 14px; font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: var(--shadow);
-      user-select: none; -webkit-user-select: none;
+      border-radius: var(--r);
+      padding: 20px; box-shadow: var(--shadow);
+      margin-bottom: 24px;
     }
-    .chip:active { transform: scale(0.94); }
-    .chip.selected { border-color: var(--accent); background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
-
-    /* ── FUNERAL TIPS ────────────────────────────────── */
-    .tips-card { background: var(--card); border-radius: var(--r); padding: 20px; box-shadow: var(--shadow); }
-    .tips-head { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-    .tip-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .tips-head { font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+    .tip-row {
+      display: flex; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
     .tip-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .tip-ico { font-size: 19px; flex-shrink: 0; }
+    .tip-ico { font-size: 18px; flex-shrink: 0; }
     .tip-txt { font-size: 13px; color: var(--t2); line-height: 1.65; }
     .tip-txt strong { color: var(--t1); font-weight: 700; }
 
-    /* ── BUTTONS ─────────────────────────────────────── */
-    .btn-primary {
+    /* ── BOTTOM BUTTON ── */
+    .bottom-btn-wrap {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      padding: 14px 20px max(20px, calc(14px + env(safe-area-inset-bottom)));
+      background: linear-gradient(to top, var(--bg) 80%, transparent);
+      z-index: 50;
+    }
+    .btn-main {
       width: 100%; padding: 18px;
-      border: none; border-radius: var(--r);
-      font-family: inherit; font-size: 17px; font-weight: 700;
+      border: none; border-radius: 14px;
+      font-family: inherit; font-size: 17px; font-weight: 800;
       letter-spacing: -0.3px; cursor: pointer;
-      background: var(--accent); color: white;
-      transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      background: var(--blue); color: white;
+      transition: all 0.15s;
     }
-    .btn-primary:active { transform: scale(0.98); opacity: 0.88; }
-    .btn-primary:disabled { background: var(--t3); box-shadow: none; cursor: not-allowed; transform: none; }
-    .btn-secondary {
-      width: 100%; padding: 16px;
-      border: 1.5px solid var(--border); border-radius: var(--r);
-      font-family: inherit; font-size: 15px; font-weight: 600;
-      cursor: pointer; background: var(--card); color: var(--t1);
-      transition: all 0.2s; box-shadow: var(--shadow);
+    .btn-main:active { transform: scale(0.98); filter: brightness(0.92); }
+    .btn-main:disabled {
+      background: var(--border); color: var(--t3);
+      cursor: not-allowed; transform: none; filter: none;
     }
-    .btn-secondary:active { transform: scale(0.98); }
-    .btn-row { display: flex; gap: 10px; margin-top: 14px; }
-    .btn-half {
-      flex: 1; padding: 15px 10px;
-      border: none; border-radius: var(--r-sm);
-      font-family: inherit; font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .btn-half:active { transform: scale(0.97); }
-    .btn-save { background: var(--t1); color: white; }
-    .btn-share { background: #FEE500; color: #181600; }
 
-    /* ── RESULT CARD ─────────────────────────────────── */
-    .result-hero {
-      background: var(--card);
-      border-radius: var(--r);
-      padding: 32px 24px 30px;
-      text-align: center;
-      box-shadow: var(--shadow-lg);
-      margin-bottom: 14px;
+    /* ── RESULT ── */
+    .result-card {
+      background: var(--card); border-radius: var(--r);
+      padding: 32px 24px; text-align: center;
+      box-shadow: 0 4px 24px rgba(49,130,246,0.12);
+      margin-bottom: 16px;
+      animation: fadeUp 0.35s ease;
       position: relative; overflow: hidden;
-      animation: resultReveal 0.45s cubic-bezier(0.4,0,0.2,1);
     }
-    @keyframes resultReveal {
-      from { opacity: 0; transform: scale(0.94) translateY(8px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .result-hero::before {
+    .result-card::before {
       content: '';
-      position: absolute; top: -60px; right: -60px;
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.05;
+      position: absolute; top: -40px; right: -40px;
+      width: 150px; height: 150px;
+      background: var(--blue-light); border-radius: 50%;
       pointer-events: none;
     }
     .result-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: var(--bg); padding: 6px 16px;
-      border-radius: 30px; font-size: 13px; font-weight: 600;
-      color: var(--t2); margin-bottom: 22px;
+      background: var(--blue-light); color: var(--blue);
+      font-size: 13px; font-weight: 700;
+      padding: 6px 16px; border-radius: 30px;
+      margin-bottom: 22px;
     }
-    .result-label { font-size: 13px; color: var(--t2); font-weight: 500; margin-bottom: 8px; }
-    .result-amount {
-      font-size: 58px; font-weight: 900;
-      letter-spacing: -3px; color: var(--t1);
-      line-height: 1; margin-bottom: 4px;
+    .result-lbl { font-size: 13px; color: var(--t2); font-weight: 500; margin-bottom: 8px; }
+    .result-amt {
+      font-size: 60px; font-weight: 900;
+      color: var(--t1); letter-spacing: -3px; line-height: 1;
     }
-    .result-unit { font-size: 22px; font-weight: 700; vertical-align: 8px; margin-left: 3px; }
-    .result-range { font-size: 14px; color: var(--t2); margin-top: 12px; line-height: 1.6; }
-    .result-range strong { color: var(--accent); font-weight: 700; }
+    .result-unit { font-size: 24px; font-weight: 700; vertical-align: 8px; margin-left: 2px; }
+    .result-range {
+      margin-top: 14px; font-size: 14px; color: var(--t2);
+      background: var(--bg); border-radius: 10px;
+      padding: 10px 16px; display: inline-block;
+    }
+    .result-range strong { color: var(--blue); font-weight: 800; }
 
-    .result-scores {
+    .score-card {
       background: var(--card); border-radius: var(--r);
-      padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow);
+      padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px;
     }
-    .rs-title { font-size: 12px; font-weight: 700; color: var(--t2); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px; }
-    .score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .score-head { font-size: 13px; font-weight: 700; color: var(--t2); margin-bottom: 16px; letter-spacing: 0.4px; }
+    .score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; }
     .score-row:last-child { margin-bottom: 0; }
-    .score-name { font-size: 13px; color: var(--t2); display: flex; align-items: center; gap: 7px; }
+    .score-nm { font-size: 14px; color: var(--t2); display: flex; align-items: center; gap: 7px; }
     .score-dots { display: flex; gap: 5px; }
-    .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
-    .dot.on { background: var(--accent); }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border); }
+    .dot.on { background: var(--blue); }
 
-    /* ── LEDGER ──────────────────────────────────────── */
-    .ledger-wrap { padding: 0 20px; margin-top: 6px; }
-    .ledger-toggle {
+    .btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .btn-half {
+      flex: 1; padding: 16px 10px;
+      border: none; border-radius: var(--r-sm);
+      font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-half:active { transform: scale(0.97); }
+    .btn-dark { background: var(--t1); color: white; }
+    .btn-kakao { background: #FEE500; color: #191919; }
+    .btn-reset {
+      width: 100%; padding: 16px;
+      border: 1.5px solid var(--border); border-radius: var(--r-sm);
+      background: var(--card); color: var(--t2);
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-reset:active { transform: scale(0.98); }
+
+    /* ── LEDGER ── */
+    .ledger-outer { padding: 0 20px 32px; }
+    .ledger-btn {
+      width: 100%; background: var(--card);
+      border: none; border-radius: var(--r);
+      padding: 16px 20px;
       display: flex; align-items: center; justify-content: space-between;
-      background: var(--card); border: none; width: 100%;
-      padding: 16px 20px; border-radius: var(--r);
       cursor: pointer; box-shadow: var(--shadow);
       font-family: inherit; transition: transform 0.15s;
     }
-    .ledger-toggle:active { transform: scale(0.99); }
+    .ledger-btn:active { transform: scale(0.99); }
     .ledger-left { display: flex; align-items: center; gap: 10px; }
     .ledger-ico { font-size: 20px; }
-    .ledger-label { font-size: 15px; font-weight: 700; }
-    .ledger-cnt {
-      background: var(--accent); color: white;
+    .ledger-lbl { font-size: 15px; font-weight: 700; }
+    .ledger-badge {
+      background: var(--blue); color: white;
       font-size: 12px; font-weight: 800;
-      padding: 2px 8px; border-radius: 10px; margin-left: 4px;
-      transition: background 0.3s;
+      padding: 2px 9px; border-radius: 10px; margin-left: 4px;
     }
-    .ledger-arrow { font-size: 13px; color: var(--t3); transition: transform 0.3s ease; }
-    .ledger-arrow.open { transform: rotate(180deg); }
+    .ledger-arr { font-size: 13px; color: var(--t3); transition: transform 0.3s; }
+    .ledger-arr.open { transform: rotate(180deg); }
     .ledger-body {
       max-height: 0; overflow: hidden;
       transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
     }
     .ledger-body.open { max-height: 3000px; }
-    .ledger-inner { padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .ledger-item {
+    .ledger-list { padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .l-item {
       background: var(--card); border-radius: var(--r-sm);
       padding: 14px 16px; display: flex; align-items: center;
       gap: 10px; box-shadow: var(--shadow);
     }
-    .li-meta { flex: 1; min-width: 0; }
-    .li-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .li-date { font-size: 11px; color: var(--t2); margin-top: 2px; }
-    .li-amt { font-size: 16px; font-weight: 800; white-space: nowrap; color: var(--t1); }
-    .li-type { font-size: 18px; }
-    .li-del {
-      background: none; border: none;
-      font-size: 15px; cursor: pointer; padding: 4px;
-      opacity: 0.35; transition: opacity 0.2s;
-    }
-    .li-del:hover { opacity: 0.7; }
-    .ledger-empty { text-align: center; padding: 30px 0; color: var(--t3); font-size: 13px; line-height: 1.8; }
-    .ledger-total {
-      background: var(--bg); border-radius: var(--r-sm);
+    .l-meta { flex: 1; min-width: 0; }
+    .l-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .l-date { font-size: 11px; color: var(--t2); margin-top: 2px; }
+    .l-amt { font-size: 16px; font-weight: 800; color: var(--blue); white-space: nowrap; }
+    .l-type { font-size: 16px; }
+    .l-del { background: none; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.35; }
+    .l-empty { text-align: center; padding: 28px 0; color: var(--t3); font-size: 13px; line-height: 1.8; }
+    .l-total {
+      background: var(--blue-light); border-radius: var(--r-sm);
       padding: 13px 18px; display: flex; justify-content: space-between;
-      font-size: 14px; font-weight: 700;
+      font-size: 14px; font-weight: 800; color: var(--blue);
     }
 
-    /* ── SAVE MODAL ──────────────────────────────────── */
-    .modal-overlay {
+    /* ── MODAL ── */
+    .modal-bg {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
-      display: flex; align-items: flex-end;
+      background: rgba(0,0,0,0.45);
+      z-index: 200; display: flex; align-items: flex-end;
       opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+      transition: opacity 0.28s;
     }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal-sheet {
+    .modal-bg.open { opacity: 1; pointer-events: all; }
+    .modal-box {
       background: var(--card);
-      border-radius: 26px 26px 0 0;
-      padding: 10px 20px 20px;
-      padding-bottom: max(32px, calc(20px + env(safe-area-inset-bottom)));
+      border-radius: 24px 24px 0 0;
+      padding: 8px 20px max(32px, calc(20px + env(safe-area-inset-bottom)));
       width: 100%;
       transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
     }
-    .modal-overlay.open .modal-sheet { transform: translateY(0); }
-    .modal-handle { width: 38px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 22px; }
-    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
-    .modal-sub { font-size: 13px; color: var(--t2); margin-bottom: 18px; }
-    .modal-preview { text-align: center; font-size: 40px; font-weight: 900; letter-spacing: -1.5px; color: var(--accent); margin-bottom: 20px; transition: color 0.3s; }
-    .modal-input {
+    .modal-bg.open .modal-box { transform: translateY(0); }
+    .modal-bar { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 14px auto 22px; }
+    .modal-title { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+    .modal-sub { font-size: 13px; color: var(--t2); margin-bottom: 16px; }
+    .modal-prev { text-align: center; font-size: 42px; font-weight: 900; color: var(--blue); letter-spacing: -1.5px; margin-bottom: 18px; }
+    .modal-inp {
       width: 100%; padding: 16px;
       border: 1.5px solid var(--border); border-radius: var(--r-sm);
-      font-family: inherit; font-size: 16px; outline: none;
-      color: var(--t1); background: var(--bg); margin-bottom: 14px;
-      transition: border-color 0.2s;
+      font-family: inherit; font-size: 16px; color: var(--t1);
+      background: var(--bg); outline: none; margin-bottom: 14px;
       -webkit-appearance: none;
+      transition: border-color 0.2s;
     }
-    .modal-input:focus { border-color: var(--accent); }
+    .modal-inp:focus { border-color: var(--blue); }
 
-    /* ── TOAST ───────────────────────────────────────── */
+    /* ── TOAST ── */
     .toast {
       position: fixed;
-      bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
-      left: 50%; transform: translateX(-50%) translateY(12px);
-      background: rgba(28,28,30,0.9);
+      bottom: max(90px, calc(74px + env(safe-area-inset-bottom)));
+      left: 50%; transform: translateX(-50%) translateY(10px);
+      background: rgba(17,17,17,0.88);
       color: white; padding: 12px 22px;
-      border-radius: 24px; font-size: 14px; font-weight: 500;
+      border-radius: 30px; font-size: 14px; font-weight: 600;
       white-space: nowrap; opacity: 0; pointer-events: none;
-      transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
-      z-index: 300;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+      z-index: 300; backdrop-filter: blur(8px);
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── UTILS ───────────────────────────────────────── */
-    .mt8  { margin-top: 8px; }
-    .mt14 { margin-top: 14px; }
-    .mt20 { margin-top: 20px; }
-    .mt26 { margin-top: 26px; }
+    /* ── DIVIDER ── */
+    .divider { height: 8px; background: var(--bg); margin: 0 -20px 24px; }
   </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <div class="top-bar-inner">
-      <button class="back-btn" id="backBtn" onclick="goBack()">
+  <!-- NAV -->
+  <div class="nav">
+    <div class="nav-inner">
+      <button class="nav-back" id="navBack" onclick="goBack()">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span class="top-title" id="topTitle">경조사비 계산기</span>
-      <span class="step-indicator" id="stepLabel"></span>
+      <span class="nav-title" id="navTitle">경조사비 계산기</span>
+      <span class="nav-step" id="navStep"></span>
     </div>
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    <div class="prog-wrap">
+      <div class="prog-bar" id="progBar" style="width:0%"></div>
     </div>
   </div>
 
   <!-- ── STEP 1: 경조사 선택 ── -->
   <div class="screen active" id="screen1">
-    <h1 class="headline">어떤 경조사인가요?</h1>
+    <h1 class="headline">어떤 <span class="hl">경조사</span>인가요?</h1>
     <p class="sub">행사 종류에 따라 금액 기준이 달라져요</p>
 
-    <div class="event-grid">
-      <div class="event-card" id="cardWedding" onclick="selectEvent('wedding')">
-        <span class="ev-emoji">💍</span>
-        <div class="ev-title">결혼식</div>
-        <div class="ev-desc">청첩장을<br>받으셨나요?</div>
+    <div class="card-grid">
+      <div class="sel-card" id="cWedding" onclick="selectEvent('wedding')">
+        <div class="check-mark"><svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg></div>
+        <span class="card-emoji">💍</span>
+        <div class="card-label">결혼식</div>
+        <div class="card-desc">청첩장을 받으셨나요?</div>
       </div>
-      <div class="event-card" id="cardFuneral" onclick="selectEvent('funeral')">
-        <span class="ev-emoji">🕯️</span>
-        <div class="ev-title">장례식</div>
-        <div class="ev-desc">부음 소식을<br>들으셨나요?</div>
+      <div class="sel-card" id="cFuneral" onclick="selectEvent('funeral')">
+        <div class="check-mark"><svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg></div>
+        <span class="card-emoji">🕯️</span>
+        <div class="card-label">장례식</div>
+        <div class="card-desc">부음 소식을 들으셨나요?</div>
       </div>
-    </div>
-
-    <div class="mt26">
-      <button class="btn-primary" id="btn1Next" onclick="goToStep(2)" disabled>
-        다음 단계로 →
-      </button>
     </div>
   </div>
 
   <!-- ── STEP 2: 관계 측정 ── -->
   <div class="screen" id="screen2">
-    <h1 class="headline">관계를 알려주세요</h1>
-    <p class="sub">세 가지 지표로 적정 금액 범위를 잡아드릴게요</p>
+    <h1 class="headline">두 분의 <span class="hl">관계</span>를<br>알려주세요</h1>
+    <p class="sub">세 가지 지표로 적정 금액을 계산할게요</p>
 
-    <!-- 친밀도 -->
-    <div class="slider-card">
-      <div class="sl-header">
-        <div class="sl-left">
+    <div class="slider-wrap">
+      <div class="sl-top">
+        <div class="sl-info">
           <span class="sl-emoji">💛</span>
-          <div>
+          <div class="sl-texts">
             <div class="sl-name">친밀도</div>
             <div class="sl-hint">알고 지낸 시간과 마음의 깊이</div>
           </div>
         </div>
-        <div class="sl-badge" id="intimacyBadge">3</div>
+        <div class="sl-val" id="vIntimacy">3</div>
       </div>
-      <div class="sl-level" id="intimacyLevel">보통이에요</div>
+      <div class="sl-lv" id="lvIntimacy">보통이에요</div>
       <input type="range" min="1" max="5" value="3" id="slIntimacy"
              oninput="updateSlider('intimacy', this.value)">
-      <div class="sl-ticks">
-        <span class="sl-tick">거의 모름</span>
-        <span class="sl-tick">조금 앎</span>
-        <span class="sl-tick">보통</span>
-        <span class="sl-tick">친한 편</span>
-        <span class="sl-tick">매우 친함</span>
+      <div class="sl-labels">
+        <span class="sl-lbl">거의 모름</span>
+        <span class="sl-lbl">조금 앎</span>
+        <span class="sl-lbl">보통</span>
+        <span class="sl-lbl">친한 편</span>
+        <span class="sl-lbl">매우 친함</span>
       </div>
     </div>
 
-    <!-- 호감도 -->
-    <div class="slider-card">
-      <div class="sl-header">
-        <div class="sl-left">
+    <div class="slider-wrap">
+      <div class="sl-top">
+        <div class="sl-info">
           <span class="sl-emoji">✨</span>
-          <div>
+          <div class="sl-texts">
             <div class="sl-name">호감도</div>
             <div class="sl-hint">개인적인 고마움이나 호감</div>
           </div>
         </div>
-        <div class="sl-badge" id="affinityBadge">3</div>
+        <div class="sl-val" id="vAffinity">3</div>
       </div>
-      <div class="sl-level" id="affinityLevel">보통이에요</div>
+      <div class="sl-lv" id="lvAffinity">보통이에요</div>
       <input type="range" min="1" max="5" value="3" id="slAffinity"
              oninput="updateSlider('affinity', this.value)">
-      <div class="sl-ticks">
-        <span class="sl-tick">별로</span>
-        <span class="sl-tick">그냥 앎</span>
-        <span class="sl-tick">보통</span>
-        <span class="sl-tick">좋아함</span>
-        <span class="sl-tick">매우 좋아함</span>
+      <div class="sl-labels">
+        <span class="sl-lbl">별로</span>
+        <span class="sl-lbl">그냥 앎</span>
+        <span class="sl-lbl">보통</span>
+        <span class="sl-lbl">좋아함</span>
+        <span class="sl-lbl">매우 좋아함</span>
       </div>
     </div>
 
-    <!-- 인접도 -->
-    <div class="slider-card">
-      <div class="sl-header">
-        <div class="sl-left">
+    <div class="slider-wrap">
+      <div class="sl-top">
+        <div class="sl-info">
           <span class="sl-emoji">👥</span>
-          <div>
+          <div class="sl-texts">
             <div class="sl-name">인접도</div>
-            <div class="sl-hint">직장·모임 등 평소 마주치는 빈도</div>
+            <div class="sl-hint">평소 마주치는 빈도</div>
           </div>
         </div>
-        <div class="sl-badge" id="proximityBadge">3</div>
+        <div class="sl-val" id="vProximity">3</div>
       </div>
-      <div class="sl-level" id="proximityLevel">보통이에요</div>
+      <div class="sl-lv" id="lvProximity">보통이에요</div>
       <input type="range" min="1" max="5" value="3" id="slProximity"
              oninput="updateSlider('proximity', this.value)">
-      <div class="sl-ticks">
-        <span class="sl-tick">전혀 없음</span>
-        <span class="sl-tick">가끔</span>
-        <span class="sl-tick">보통</span>
-        <span class="sl-tick">자주</span>
-        <span class="sl-tick">매일</span>
+      <div class="sl-labels">
+        <span class="sl-lbl">전혀 없음</span>
+        <span class="sl-lbl">가끔</span>
+        <span class="sl-lbl">보통</span>
+        <span class="sl-lbl">자주</span>
+        <span class="sl-lbl">매일</span>
       </div>
     </div>
-
-    <button class="btn-primary" onclick="goToStep(3)">다음 단계로 →</button>
   </div>
 
   <!-- ── STEP 3: 조건 선택 (동적) ── -->
   <div class="screen" id="screen3">
-    <div id="s3body"></div>
+    <div id="s3"></div>
   </div>
 
   <!-- ── STEP 4: 결과 ── -->
   <div class="screen" id="screen4">
-    <div id="s4body"></div>
+    <div id="s4"></div>
   </div>
 
-  <!-- ── 품앗이 장부 (항상 노출) ── -->
-  <div class="ledger-wrap" style="margin-top:20px">
-    <button class="ledger-toggle" onclick="toggleLedger()">
+  <!-- 고정 하단 버튼 -->
+  <div class="bottom-btn-wrap" id="bottomWrap">
+    <button class="btn-main" id="mainBtn" onclick="onMainBtn()">다음</button>
+  </div>
+
+  <!-- 품앗이 장부 -->
+  <div class="ledger-outer" style="margin-top:8px">
+    <button class="ledger-btn" onclick="toggleLedger()">
       <div class="ledger-left">
         <span class="ledger-ico">📒</span>
-        <span class="ledger-label">나의 품앗이 장부</span>
-        <span class="ledger-cnt" id="ledgerCnt">0</span>
+        <span class="ledger-lbl">나의 품앗이 장부</span>
+        <span class="ledger-badge" id="lCnt">0</span>
       </div>
-      <span class="ledger-arrow" id="ledgerArrow">▼</span>
+      <span class="ledger-arr" id="lArr">▼</span>
     </button>
-    <div class="ledger-body" id="ledgerBody">
-      <div class="ledger-inner" id="ledgerInner"></div>
+    <div class="ledger-body" id="lBody">
+      <div class="ledger-list" id="lList"></div>
     </div>
   </div>
 
 </div><!-- #app -->
 
 <!-- 저장 모달 -->
-<div class="modal-overlay" id="saveModal" onclick="onOverlayClick(event)">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
+<div class="modal-bg" id="saveModal" onclick="modalBgClick(event)">
+  <div class="modal-box">
+    <div class="modal-bar"></div>
     <div class="modal-title">장부에 기록하기</div>
     <div class="modal-sub">누구의 경조사에 보냈나요?</div>
-    <div class="modal-preview" id="modalAmt">10만원</div>
-    <input type="text" class="modal-input" id="modalName"
-           placeholder="예) 홍길동 결혼식"
-           maxlength="30"
+    <div class="modal-prev" id="mAmt">10만원</div>
+    <input class="modal-inp" id="mName" type="text"
+           placeholder="예) 홍길동 결혼식" maxlength="30"
            onkeydown="if(event.key==='Enter')confirmSave()">
-    <button class="btn-primary" onclick="confirmSave()">💾 장부에 저장하기</button>
+    <button class="btn-main" onclick="confirmSave()">💾 저장하기</button>
   </div>
 </div>
 
@@ -568,75 +592,96 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ════════════════════════════════════════════
-   APP STATE
-════════════════════════════════════════════ */
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
 const S = {
   step: 1,
-  type: null,          // 'wedding' | 'funeral'
-  intimacy: 3,
-  affinity: 3,
-  proximity: 3,
-  venue: null,         // 'budget'|'normal'|'premium'|'hotel'
-  attendance: null,    // 'alone'|'couple'|'absent'
+  type: null,
+  intimacy: 3, affinity: 3, proximity: 3,
+  venue: null, attendance: null,
   result: null,
 };
-
 let ledger = [];
-try { ledger = JSON.parse(localStorage.getItem('gwp_ledger') || '[]'); } catch(e) {}
-let ledgerOpen = false;
-let pendingAmt = 0;
+try { ledger = JSON.parse(localStorage.getItem('gwp_ledger') || '[]'); } catch(e){}
+let ledgerOpen = false, pendingAmt = 0;
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    CONSTANTS
-════════════════════════════════════════════ */
-const AMOUNTS = [3, 5, 7, 10, 15, 20, 30]; // 만원
-
+══════════════════════════════ */
+const AMOUNTS = [3, 5, 7, 10, 15, 20, 30];
 const LEVELS = {
-  intimacy:  ['거의 모르는 사이예요','조금 아는 사이예요','보통이에요','꽤 친한 사이예요','정말 친한 사이예요'],
+  intimacy:  ['거의 모르는 사이예요','조금 아는 사이예요','보통이에요','꽤 친한 사이예요','매우 친한 사이예요'],
   affinity:  ['별로 안 좋아해요','그냥 아는 사이예요','보통이에요','호감이 많이 가요','정말 고마운 분이에요'],
   proximity: ['거의 못 보는 사이예요','가끔 마주쳐요','보통이에요','자주 보는 사이예요','매일 마주쳐요'],
 };
-
 const VENUES = [
-  { v:'budget',  l:'🍱 가성비',   d:'뷔페·일반식당' },
-  { v:'normal',  l:'🏢 일반',     d:'일반 예식장' },
-  { v:'premium', l:'🌟 고급',     d:'럭셔리 웨딩홀' },
-  { v:'hotel',   l:'🏨 호텔',     d:'특급 호텔 웨딩' },
+  {v:'budget', e:'🍱', l:'가성비', d:'뷔페·일반'},
+  {v:'normal', e:'🏢', l:'일반', d:'일반 예식장'},
+  {v:'premium',e:'🌟', l:'고급', d:'럭셔리 웨딩홀'},
+  {v:'hotel',  e:'🏨', l:'호텔', d:'특급 호텔'},
 ];
-
 const ATTENDS = [
-  { v:'alone',  l:'🚶 혼자 가요' },
-  { v:'couple', l:'👫 둘이 가요' },
-  { v:'absent', l:'💌 못 가고 돈만 보내요' },
+  {v:'alone',  e:'🚶', l:'혼자 가요'},
+  {v:'couple', e:'👫', l:'둘이 가요'},
+  {v:'absent', e:'💌', l:'못 가고\n돈만 보내요'},
 ];
-
 const TIPS = [
-  { i:'👔', t:'<strong>복장</strong>: 검은색 정장이 기본입니다. 화려한 장신구나 밝은 색상은 피하세요.' },
-  { i:'🙇', t:'<strong>절차</strong>: 빈소 입장 후 향을 피우고 두 번 절(재배)이 기본 예절입니다.' },
-  { i:'💵', t:'<strong>부조금 봉투</strong>: 흰 봉투에 담아 뒷면 왼쪽 하단에 이름을 적으세요.' },
-  { i:'🗣️', t:'<strong>위로 말씀</strong>: "삼가 고인의 명복을 빕니다"가 가장 적절합니다.' },
-  { i:'📵', t:'<strong>사진 촬영</strong>: 빈소 안에서의 사진 촬영은 절대 삼가주세요.' },
-  { i:'🍶', t:'<strong>음식·자리</strong>: 유족이 권하는 음식은 겸손히 받아드리는 것이 예의입니다.' },
+  {i:'👔', t:'<strong>복장</strong>: 검은색 정장이 기본. 밝은 색상·화려한 장신구는 피하세요.'},
+  {i:'🙇', t:'<strong>절차</strong>: 향을 피우고 두 번 절(재배)이 기본 예절입니다.'},
+  {i:'💵', t:'<strong>봉투</strong>: 흰 봉투에 담고, 뒷면 왼쪽 하단에 이름을 쓰세요.'},
+  {i:'🗣️', t:'<strong>위로 말씀</strong>: "삼가 고인의 명복을 빕니다"가 가장 적절합니다.'},
+  {i:'📵', t:'<strong>사진 촬영</strong>: 빈소 안에서의 사진 촬영은 절대 삼가세요.'},
+  {i:'🍶', t:'<strong>음식</strong>: 유족이 권하는 음식은 겸손히 받아드리는 것이 예의입니다.'},
 ];
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    NAVIGATION
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function goToStep(n) {
   S.step = n;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen' + n).classList.add('active');
 
-  const pct = [(0),(33),(66),(100)][n-1] || 0;
-  document.getElementById('progressBar').style.width = pct + '%';
+  const progs = [0, 33, 66, 100];
+  document.getElementById('progBar').style.width = (progs[n-1]||0) + '%';
 
   const titles = ['경조사비 계산기','관계 측정','조건 선택','계산 결과'];
-  document.getElementById('topTitle').textContent = titles[n-1];
-  document.getElementById('stepLabel').textContent = n < 4 ? `${n} / 3` : '';
+  document.getElementById('navTitle').textContent = titles[n-1];
+  document.getElementById('navStep').textContent = n < 4 ? `${n}/3` : '';
 
-  const bb = document.getElementById('backBtn');
-  n > 1 ? bb.classList.add('visible') : bb.classList.remove('visible');
+  const nb = document.getElementById('navBack');
+  n > 1 ? nb.classList.add('show') : nb.classList.remove('show');
+
+  // 하단 버튼
+  const wrap = document.getElementById('bottomWrap');
+  const btn  = document.getElementById('mainBtn');
+
+  if (n === 1) {
+    wrap.style.display = 'block';
+    btn.textContent = '다음';
+    btn.disabled = !S.type;
+    btn.onclick = () => goToStep(2);
+  } else if (n === 2) {
+    wrap.style.display = 'block';
+    btn.textContent = '다음';
+    btn.disabled = false;
+    btn.onclick = () => goToStep(3);
+  } else if (n === 3) {
+    if (S.type === 'wedding') {
+      wrap.style.display = 'block';
+      btn.textContent = '💰 금액 계산하기';
+      btn.disabled = !(S.venue && S.attendance);
+      btn.onclick = doCalc;
+    } else {
+      wrap.style.display = 'block';
+      btn.textContent = '💰 금액 계산하기';
+      btn.disabled = false;
+      btn.onclick = doCalc;
+    }
+  } else {
+    wrap.style.display = 'none';
+  }
 
   if (n === 3) buildStep3();
   if (n === 4) buildStep4();
@@ -645,466 +690,360 @@ function goToStep(n) {
 
 function goBack() { if (S.step > 1) goToStep(S.step - 1); }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    STEP 1
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function selectEvent(type) {
   S.type = type;
-  document.getElementById('cardWedding').className =
-    'event-card' + (type === 'wedding' ? ' sel-wedding' : '');
-  document.getElementById('cardFuneral').className =
-    'event-card' + (type === 'funeral' ? ' sel-funeral' : '');
-  document.getElementById('btn1Next').disabled = false;
-
-  const accent = type === 'wedding' ? '#FF9500' : '#3C3C3E';
-  document.documentElement.style.setProperty('--accent', accent);
-  initSliders(); // re-color slider tracks
+  document.getElementById('cWedding').classList.toggle('selected', type === 'wedding');
+  document.getElementById('cFuneral').classList.toggle('selected', type === 'funeral');
+  document.getElementById('mainBtn').disabled = false;
 }
 
-/* ════════════════════════════════════════════
-   STEP 2 — SLIDERS
-════════════════════════════════════════════ */
+/* ══════════════════════════════
+   STEP 2 SLIDERS
+══════════════════════════════ */
 function initSliders() {
   ['intimacy','affinity','proximity'].forEach(k => updateSlider(k, S[k]));
 }
-
 function updateSlider(key, val) {
   S[key] = parseInt(val);
-  const idx = S[key] - 1;
-  const pct = idx / 4 * 100;
-  const accent = getComputedStyle(document.documentElement)
-                 .getPropertyValue('--accent').trim() || '#007AFF';
-
-  const idMap = { intimacy:'Intimacy', affinity:'Affinity', proximity:'Proximity' };
-  const slMap = { intimacy:'slIntimacy', affinity:'slAffinity', proximity:'slProximity' };
-
-  document.getElementById(key+'Badge').textContent = val;
-  document.getElementById(key+'Level').textContent = LEVELS[key][idx];
-  document.getElementById(slMap[key]).style.background =
-    `linear-gradient(to right, ${accent} ${pct}%, var(--border) ${pct}%)`;
+  const pct = (S[key]-1)/4*100;
+  const idMap = {intimacy:'Intimacy', affinity:'Affinity', proximity:'Proximity'};
+  const sfx = idMap[key];
+  document.getElementById('v'+sfx).textContent = val;
+  document.getElementById('lv'+sfx).textContent = LEVELS[key][S[key]-1];
+  document.getElementById('sl'+sfx).style.background =
+    `linear-gradient(to right, #3182F6 ${pct}%, var(--border) ${pct}%)`;
 }
 
-/* ════════════════════════════════════════════
-   STEP 3 — CONDITIONS
-════════════════════════════════════════════ */
+/* ══════════════════════════════
+   STEP 3
+══════════════════════════════ */
 function buildStep3() {
-  const el = document.getElementById('s3body');
-
+  const el = document.getElementById('s3');
   if (S.type === 'wedding') {
     el.innerHTML = `
-      <h1 class="headline">결혼식 조건을<br>알려주세요</h1>
+      <h1 class="headline">결혼식 <span class="hl">조건</span>을<br>선택해주세요</h1>
       <p class="sub">식장 분위기와 참석 여부가 금액에 영향을 줘요</p>
 
-      <div class="section-label">식장 등급</div>
-      <div class="chips" id="venueChips">
+      <div class="sec-title">식장 등급</div>
+      <div class="card-grid" id="venueGrid">
         ${VENUES.map(v=>`
-          <div class="chip${S.venue===v.v?' selected':''}"
-               data-v="${v.v}" onclick="pickVenue('${v.v}')">
-            ${v.l}<br><span style="font-size:11px;opacity:.65">${v.d}</span>
+          <div class="sel-card sm${S.venue===v.v?' selected':''}" data-v="${v.v}" onclick="pickVenue('${v.v}')">
+            <div class="check-mark"><svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg></div>
+            <span class="card-emoji">${v.e}</span>
+            <div class="card-label">${v.l}</div>
+            <div class="card-desc">${v.d}</div>
           </div>`).join('')}
       </div>
 
-      <div class="section-label" style="margin-top:24px">참석 여부</div>
-      <div class="chips" id="attendChips">
+      <div class="sec-title" style="margin-top:28px">참석 여부</div>
+      <div class="card-grid col3" id="attendGrid">
         ${ATTENDS.map(a=>`
-          <div class="chip${S.attendance===a.v?' selected':''}"
-               data-v="${a.v}" onclick="pickAttend('${a.v}')">
-            ${a.l}
+          <div class="sel-card sm${S.attendance===a.v?' selected':''}" data-v="${a.v}" onclick="pickAttend('${a.v}')">
+            <div class="check-mark"><svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg></div>
+            <span class="card-emoji">${a.e}</span>
+            <div class="card-label" style="white-space:pre-line;font-size:12px">${a.l}</div>
           </div>`).join('')}
-      </div>
-
-      <div class="mt26">
-        <button class="btn-primary" id="btn3Calc" onclick="doCalc()"
-                ${S.venue&&S.attendance?'':'disabled'}>
-          💰 적정 금액 계산하기
-        </button>
       </div>`;
   } else {
-    // 장례식
     el.innerHTML = `
-      <h1 class="headline">장례식 예절 안내</h1>
-      <p class="sub">금액 계산과 함께 꼭 알아두셔야 할 매너 팁이에요</p>
-
-      <div class="tips-card" style="margin-bottom:22px">
+      <h1 class="headline">장례식 <span class="hl">예절</span><br>미리 알아두세요</h1>
+      <p class="sub">기본 매너를 알고 가면 더 예의바른 조문이 돼요</p>
+      <div class="tips-wrap">
         <div class="tips-head">🙏 장례식장 기본 예절</div>
         ${TIPS.map(t=>`
           <div class="tip-row">
             <span class="tip-ico">${t.i}</span>
             <div class="tip-txt">${t.t}</div>
           </div>`).join('')}
-      </div>
-
-      <button class="btn-primary" onclick="doCalc()">
-        💰 적정 금액 계산하기
-      </button>`;
+      </div>`;
   }
 }
 
 function pickVenue(v) {
   S.venue = v;
-  document.querySelectorAll('#venueChips .chip').forEach(c => {
+  document.querySelectorAll('#venueGrid .sel-card').forEach(c => {
     c.classList.toggle('selected', c.dataset.v === v);
   });
-  checkStep3();
+  checkStep3Btn();
 }
-
 function pickAttend(v) {
   S.attendance = v;
-  document.querySelectorAll('#attendChips .chip').forEach(c => {
+  document.querySelectorAll('#attendGrid .sel-card').forEach(c => {
     c.classList.toggle('selected', c.dataset.v === v);
   });
-  checkStep3();
+  checkStep3Btn();
+}
+function checkStep3Btn() {
+  document.getElementById('mainBtn').disabled =
+    S.type === 'wedding' ? !(S.venue && S.attendance) : false;
 }
 
-function checkStep3() {
-  const btn = document.getElementById('btn3Calc');
-  if (btn) btn.disabled = !(S.venue && S.attendance);
-}
-
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    CALCULATION
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function doCalc() {
-  const total = S.intimacy + S.affinity + S.proximity; // 3~15
-
-  let idx;
-  if (total <= 5)       idx = 0;
-  else if (total <= 7)  idx = 1;
-  else if (total <= 9)  idx = 2;
-  else if (total <= 11) idx = 3;
-  else if (total <= 13) idx = 4;
-  else                  idx = 5;
-
+  const total = S.intimacy + S.affinity + S.proximity;
+  let idx = total<=5?0 : total<=7?1 : total<=9?2 : total<=11?3 : total<=13?4 : 5;
   if (S.type === 'wedding') {
-    const vm = {budget:-1, normal:0, premium:1, hotel:2};
-    const am = {alone:0, couple:1, absent:-1};
-    idx += (vm[S.venue]||0) + (am[S.attendance]||0);
+    idx += ({budget:-1,normal:0,premium:1,hotel:2}[S.venue]||0);
+    idx += ({alone:0,couple:1,absent:-1}[S.attendance]||0);
   }
   idx = Math.max(0, Math.min(AMOUNTS.length-1, idx));
-
   S.result = {
     rec:  AMOUNTS[idx],
     low:  AMOUNTS[Math.max(0, idx-1)],
     high: AMOUNTS[Math.min(AMOUNTS.length-1, idx+1)],
-    idx,
   };
   goToStep(4);
 }
 
-/* ════════════════════════════════════════════
-   STEP 4 — RESULT
-════════════════════════════════════════════ */
-function dots(n) {
-  return Array.from({length:5}, (_,i) =>
-    `<div class="dot${i<n?' on':''}"></div>`).join('');
+/* ══════════════════════════════
+   STEP 4 RESULT
+══════════════════════════════ */
+function makeDots(n) {
+  return Array.from({length:5},(_,i)=>`<div class="dot${i<n?' on':''}"></div>`).join('');
 }
-
 function buildStep4() {
-  const r = S.result;
-  if (!r) return;
-  const typeName  = S.type==='wedding'?'결혼식':'장례식';
+  const r = S.result; if(!r) return;
+  const typeName = S.type==='wedding'?'결혼식':'장례식';
   const typeEmoji = S.type==='wedding'?'💍':'🕯️';
 
-  let extraBlock = '';
+  let condRow = '';
   if (S.type==='wedding' && S.venue && S.attendance) {
     const vl = VENUES.find(v=>v.v===S.venue)?.l||'';
-    const al = ATTENDS.find(a=>a.v===S.attendance)?.l||'';
-    extraBlock = `
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
-        <span style="background:var(--bg);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--t2)">${vl}</span>
-        <span style="background:var(--bg);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--t2)">${al}</span>
-      </div>`;
+    const al = ATTENDS.find(a=>a.v===S.attendance)?.l.replace('\n','')||'';
+    condRow = `<div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+      <span style="background:var(--blue-light);color:var(--blue);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700">${vl}</span>
+      <span style="background:var(--blue-light);color:var(--blue);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700">${al}</span>
+    </div>`;
   }
 
   let funeralTips = '';
   if (S.type === 'funeral') {
-    funeralTips = `
-      <div class="tips-card" style="margin-bottom:14px">
-        <div class="tips-head">🙏 장례식장 핵심 예절</div>
-        ${TIPS.slice(0,4).map(t=>`
-          <div class="tip-row">
-            <span class="tip-ico">${t.i}</span>
-            <div class="tip-txt">${t.t}</div>
-          </div>`).join('')}
-      </div>`;
+    funeralTips = `<div class="tips-wrap" style="margin-bottom:14px">
+      <div class="tips-head">🙏 오늘 꼭 기억하세요</div>
+      ${TIPS.slice(0,3).map(t=>`<div class="tip-row"><span class="tip-ico">${t.i}</span><div class="tip-txt">${t.t}</div></div>`).join('')}
+    </div>`;
   }
 
-  document.getElementById('s4body').innerHTML = `
-    <div class="result-hero">
+  document.getElementById('s4').innerHTML = `
+    <div class="result-card">
       <div class="result-badge">${typeEmoji} ${typeName}</div>
-      <div class="result-label">추천 경조사비</div>
-      <div class="result-amount">${r.rec}<span class="result-unit">만원</span></div>
-      <div class="result-range">
-        적정 범위 · <strong>${r.low}만원</strong> ~ <strong>${r.high}만원</strong>
-      </div>
-      ${extraBlock}
+      <div class="result-lbl">추천 경조사비</div>
+      <div class="result-amt">${r.rec}<span class="result-unit">만원</span></div>
+      <div class="result-range">적정 범위 <strong>${r.low}만원</strong> ~ <strong>${r.high}만원</strong></div>
+      ${condRow}
     </div>
 
-    <div class="result-scores">
-      <div class="rs-title">📊 관계 점수 요약</div>
+    <div class="score-card">
+      <div class="score-head">📊 관계 점수</div>
       <div class="score-row">
-        <div class="score-name">💛 친밀도</div>
-        <div class="score-dots">${dots(S.intimacy)}</div>
+        <div class="score-nm">💛 친밀도</div>
+        <div class="score-dots">${makeDots(S.intimacy)}</div>
       </div>
       <div class="score-row">
-        <div class="score-name">✨ 호감도</div>
-        <div class="score-dots">${dots(S.affinity)}</div>
+        <div class="score-nm">✨ 호감도</div>
+        <div class="score-dots">${makeDots(S.affinity)}</div>
       </div>
       <div class="score-row">
-        <div class="score-name">👥 인접도</div>
-        <div class="score-dots">${dots(S.proximity)}</div>
+        <div class="score-nm">👥 인접도</div>
+        <div class="score-dots">${makeDots(S.proximity)}</div>
       </div>
     </div>
 
     ${funeralTips}
 
     <div class="btn-row">
-      <button class="btn-half btn-save" onclick="openSave(${r.rec})">📒 장부에 저장</button>
-      <button class="btn-half btn-share" onclick="doShare()">💬 결과 공유</button>
+      <button class="btn-half btn-dark" onclick="openSave(${r.rec})">📒 장부에 저장</button>
+      <button class="btn-half btn-kakao" onclick="doShare()">💬 결과 공유</button>
     </div>
-
-    <div class="mt14">
-      <button class="btn-secondary" onclick="resetAll()">🔄 처음부터 다시 계산</button>
-    </div>`;
+    <button class="btn-reset" onclick="resetAll()">🔄 처음부터 다시 계산하기</button>`;
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    SAVE MODAL
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function openSave(amt) {
   pendingAmt = amt;
-  document.getElementById('modalAmt').textContent = amt + '만원';
-  document.getElementById('modalName').value = '';
+  document.getElementById('mAmt').textContent = amt + '만원';
+  document.getElementById('mName').value = '';
   document.getElementById('saveModal').classList.add('open');
-  setTimeout(() => document.getElementById('modalName').focus(), 380);
+  setTimeout(() => document.getElementById('mName').focus(), 360);
 }
-
-function onOverlayClick(e) {
+function modalBgClick(e) {
   if (e.target === document.getElementById('saveModal')) closeModal();
 }
-function closeModal() {
-  document.getElementById('saveModal').classList.remove('open');
-}
-
+function closeModal() { document.getElementById('saveModal').classList.remove('open'); }
 function confirmSave() {
-  const name = document.getElementById('modalName').value.trim();
+  const name = document.getElementById('mName').value.trim();
   if (!name) { showToast('이름을 입력해주세요 📝'); return; }
-
   const item = {
     id: Date.now(),
     date: new Date().toLocaleDateString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit'}),
-    name,
-    amount: pendingAmt,
-    type: S.type,
+    name, amount: pendingAmt, type: S.type,
   };
   ledger.unshift(item);
-  try { localStorage.setItem('gwp_ledger', JSON.stringify(ledger)); } catch(e) {}
-
+  try { localStorage.setItem('gwp_ledger', JSON.stringify(ledger)); } catch(e){}
   closeModal();
   renderLedger();
   if (!ledgerOpen) toggleLedger();
   showToast('✅ 장부에 저장했어요!');
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    LEDGER
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function toggleLedger() {
   ledgerOpen = !ledgerOpen;
-  document.getElementById('ledgerBody').classList.toggle('open', ledgerOpen);
-  document.getElementById('ledgerArrow').classList.toggle('open', ledgerOpen);
+  document.getElementById('lBody').classList.toggle('open', ledgerOpen);
+  document.getElementById('lArr').classList.toggle('open', ledgerOpen);
 }
-
 function renderLedger() {
-  document.getElementById('ledgerCnt').textContent = ledger.length;
-  const el = document.getElementById('ledgerInner');
-
+  document.getElementById('lCnt').textContent = ledger.length;
+  const el = document.getElementById('lList');
   if (!ledger.length) {
-    el.innerHTML = `<div class="ledger-empty">아직 기록이 없어요 🌱<br>계산 후 장부에 저장해보세요!</div>`;
+    el.innerHTML = `<div class="l-empty">아직 기록이 없어요 🌱<br>계산 후 장부에 저장해보세요!</div>`;
     return;
   }
-
-  const total = ledger.reduce((s,i) => s + i.amount, 0);
-  const te = t => t==='wedding'?'💍':'🕯️';
-
-  el.innerHTML = ledger.map(item => `
-    <div class="ledger-item">
-      <div class="li-meta">
-        <div class="li-name">${escHtml(item.name)}</div>
-        <div class="li-date">${item.date}</div>
+  const total = ledger.reduce((s,i)=>s+i.amount,0);
+  el.innerHTML = ledger.map(item=>`
+    <div class="l-item">
+      <div class="l-meta">
+        <div class="l-name">${esc(item.name)}</div>
+        <div class="l-date">${item.date}</div>
       </div>
-      <span class="li-type">${te(item.type)}</span>
-      <div class="li-amt">${item.amount}만원</div>
-      <button class="li-del" onclick="delLedger(${item.id})" title="삭제">🗑️</button>
-    </div>`).join('') + `
-    <div class="ledger-total">
-      <span>총 지출</span>
-      <span>${total}만원</span>
-    </div>`;
+      <span class="l-type">${item.type==='wedding'?'💍':'🕯️'}</span>
+      <div class="l-amt">${item.amount}만원</div>
+      <button class="l-del" onclick="delItem(${item.id})">🗑️</button>
+    </div>`).join('')
+  + `<div class="l-total"><span>총 지출</span><span>${total}만원</span></div>`;
 }
-
-function delLedger(id) {
-  ledger = ledger.filter(i => i.id !== id);
-  try { localStorage.setItem('gwp_ledger', JSON.stringify(ledger)); } catch(e) {}
+function delItem(id) {
+  ledger = ledger.filter(i=>i.id!==id);
+  try { localStorage.setItem('gwp_ledger', JSON.stringify(ledger)); } catch(e){}
   renderLedger();
   showToast('삭제했어요');
 }
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    SHARE
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function doShare() {
   const r = S.result;
   const typeName = S.type==='wedding'?'결혼식':'장례식';
   let cond = '';
-  if (S.type === 'wedding') {
+  if (S.type==='wedding') {
     const vl = VENUES.find(v=>v.v===S.venue)?.l||'';
-    const al = ATTENDS.find(a=>a.v===S.attendance)?.l||'';
-    cond = `\n🏛 식장 등급: ${vl}\n👣 참석 여부: ${al}`;
+    const al = ATTENDS.find(a=>a.v===S.attendance)?.l.replace('\n','')||'';
+    cond = `\n🏛 식장: ${vl}\n👣 참석: ${al}`;
   }
   const text =
 `📩 경조사비 계산 결과
 
 행사: ${typeName}
-
-관계 점수
 💛 친밀도: ${'★'.repeat(S.intimacy)}${'☆'.repeat(5-S.intimacy)}
 ✨ 호감도: ${'★'.repeat(S.affinity)}${'☆'.repeat(5-S.affinity)}
 👥 인접도: ${'★'.repeat(S.proximity)}${'☆'.repeat(5-S.proximity)}${cond}
 
 💰 추천 금액: ${r.rec}만원
-   (적정 범위: ${r.low}만원 ~ ${r.high}만원)
-
-📱 경조사비 계산기로 계산했어요`;
+   (범위: ${r.low}만원 ~ ${r.high}만원)`;
 
   if (navigator.share) {
-    navigator.share({ title:'경조사비 계산 결과', text }).catch(()=>{});
+    navigator.share({title:'경조사비 계산 결과', text}).catch(()=>{});
   } else {
-    copyText(text);
-    showToast('📋 결과가 클립보드에 복사됐어요!');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(()=>showToast('📋 복사됐어요!')).catch(()=>fallbackCopy(text));
+    } else { fallbackCopy(text); }
   }
 }
-
-function copyText(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).catch(()=>{});
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-    document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta);
+  ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('📋 결과가 복사됐어요!');
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    TOAST
-════════════════════════════════════════════ */
-let toastTimer;
+══════════════════════════════ */
+let toastTid;
 function showToast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  clearTimeout(toastTid);
+  toastTid = setTimeout(()=>el.classList.remove('show'), 2500);
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    RESET
-════════════════════════════════════════════ */
+══════════════════════════════ */
 function resetAll() {
-  Object.assign(S, { step:1, type:null, intimacy:3, affinity:3, proximity:3, venue:null, attendance:null, result:null });
-  document.getElementById('cardWedding').className = 'event-card';
-  document.getElementById('cardFuneral').className = 'event-card';
-  document.getElementById('btn1Next').disabled = true;
-  document.documentElement.style.setProperty('--accent','#007AFF');
-  ['slIntimacy','slAffinity','slProximity'].forEach(id => document.getElementById(id).value = 3);
+  Object.assign(S,{step:1,type:null,intimacy:3,affinity:3,proximity:3,venue:null,attendance:null,result:null});
+  document.getElementById('cWedding').classList.remove('selected');
+  document.getElementById('cFuneral').classList.remove('selected');
+  ['slIntimacy','slAffinity','slProximity'].forEach(id=>{ document.getElementById(id).value=3; });
   initSliders();
   goToStep(1);
 }
 
-/* ════════════════════════════════════════════
-   PWA SETUP
-════════════════════════════════════════════ */
+/* ══════════════════════════════
+   PWA
+══════════════════════════════ */
 function setupPWA() {
-  const iconSVG = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-    <rect width="192" height="192" rx="42" fill="#111111"/>
-    <text x="96" y="115" text-anchor="middle" dominant-baseline="middle"
-          font-family="Arial, sans-serif" font-size="82" font-weight="900"
-          fill="white">경</text>
-    <rect x="32" y="144" width="128" height="6" rx="3" fill="#FF9500" opacity="0.85"/>
+  const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+    <rect width="192" height="192" rx="42" fill="#3182F6"/>
+    <text x="96" y="118" text-anchor="middle" dominant-baseline="middle"
+          font-family="Arial" font-size="82" font-weight="900" fill="white">경</text>
+    <rect x="36" y="146" width="120" height="7" rx="3.5" fill="white" opacity="0.6"/>
   </svg>`);
-  const iconURL = 'data:image/svg+xml,' + iconSVG;
-
-  const link = document.getElementById('app-icon');
-  link.href = iconURL;
-
+  const icon = 'data:image/svg+xml,' + svg;
+  document.getElementById('app-icon').href = icon;
   const manifest = {
-    name: '경조사비 계산기',
-    short_name: '경조사비',
-    description: '결혼식·장례식 경조사비를 스마트하게 계산해 드립니다',
-    start_url: './',
-    display: 'standalone',
-    background_color: '#F2F2F7',
-    theme_color: '#111111',
-    orientation: 'portrait-primary',
-    icons: [
-      { src: iconURL, sizes: '192x192', type: 'image/svg+xml' },
-      { src: iconURL, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
+    name:'경조사비 계산기', short_name:'경조사비',
+    start_url:'./', display:'standalone',
+    background_color:'#F8F9FA', theme_color:'#3182F6',
+    orientation:'portrait-primary',
+    icons:[{src:icon,sizes:'192x192',type:'image/svg+xml'},{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]
   };
-
   try {
-    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
     document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
-  } catch(e) {}
+  } catch(e){}
 }
 
-/* ════════════════════════════════════════════
-   SERVICE WORKER (offline 캐싱)
-════════════════════════════════════════════ */
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const swSrc = `
-    const CACHE = 'gwp-cache-v1';
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open(CACHE).then(c => c.addAll([location.pathname]))
-      );
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(clients.claim());
-    });
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
-        }))
-      );
-    });`;
+  const sw = `const C='gwp-v2';
+self.addEventListener('install',e=>{ e.waitUntil(caches.open(C).then(c=>c.addAll([location.pathname]))); self.skipWaiting(); });
+self.addEventListener('activate',e=>{ e.waitUntil(clients.claim()); });
+self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });`;
   try {
-    const blob = new Blob([swSrc], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob))
-      .catch(() => {}); // 로컬 파일에서는 SW 등록이 안 될 수 있어요
-  } catch(e) {}
+    const blob = new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  } catch(e){}
 }
 
-/* ════════════════════════════════════════════
+/* ══════════════════════════════
    INIT
-════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+══════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
   setupPWA();
   registerSW();
   initSliders();
   renderLedger();
+  // 초기 버튼 상태
+  document.getElementById('mainBtn').disabled = true;
+  document.getElementById('mainBtn').onclick = () => goToStep(2);
 });
 </script>
 </body>
